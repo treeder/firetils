@@ -1,4 +1,4 @@
-name: CI
+name: Bump Version Tag
 
 on:
   push:
