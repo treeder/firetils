@@ -23,4 +23,5 @@ jobs:
         git fetch --tags
         git tag
         # git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/username/repository
-        wget -O - https://raw.githubusercontent.com/treeder/bump/master/gitbump.sh | bash
+        # wget -O - https://raw.githubusercontent.com/treeder/bump/master/gitbump.sh | bash
+        ./gitbump.sh
