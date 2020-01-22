@@ -11,11 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Run a one-line script
       run: echo Hello, world!
     - name: Run a multi-line script
       run: |
         git config --global user.email "treeder+actions@gmail.com"
         git config --global user.name "Actions"
+        # git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/username/repository
         wget -O - https://raw.githubusercontent.com/treeder/bump/master/gitbump.sh | bash
