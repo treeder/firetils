@@ -16,4 +16,6 @@ jobs:
       run: echo Hello, world!
     - name: Run a multi-line script
       run: |
+        git config --global user.email "treeder+actions@gmail.com"
+        git config --global user.name "Actions"
         wget -O - https://raw.githubusercontent.com/treeder/bump/master/gitbump.sh | bash
