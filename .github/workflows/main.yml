@@ -18,10 +18,5 @@ jobs:
       run: |
         git config --global user.email "treeder+actions@gmail.com"
         git config --global user.name "Actions"
-        git branch
-        git status
         git fetch --tags
-        git tag
-        # git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/username/repository
-        # wget -O - https://raw.githubusercontent.com/treeder/bump/master/gitbump.sh | bash
-        ./gitbump.sh
+        wget -O - https://raw.githubusercontent.com/treeder/bump/master/gitbump.sh | bash
