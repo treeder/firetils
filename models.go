@@ -6,8 +6,19 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
+type FirestoredI interface {
+	GetRef() *firestore.DocumentRef
+	SetRef(*firestore.DocumentRef)
+}
 type Firestored struct {
 	Ref *firestore.DocumentRef `firestore:"-" json:"-"`
+}
+
+func (f *Firestored) GetRef() *firestore.DocumentRef {
+	return f.Ref
+}
+func (f *Firestored) SetRef(ref *firestore.DocumentRef) {
+	f.Ref = ref
 }
 
 type TimestampedI interface {
