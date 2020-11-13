@@ -7,11 +7,22 @@ import (
 	"strings"
 
 	"cloud.google.com/go/firestore"
-	firebase "firebase.google.com/go"
-	fauth "firebase.google.com/go/auth"
+	firebase "firebase.google.com/go/v4"
+	fauth "firebase.google.com/go/v4/auth"
 	"github.com/treeder/gotils"
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
+)
+
+var (
+// App      *firebase.App
+// fireauth *fauth.Client
+)
+
+type contextKey string
+
+const (
+	TokenContextKey = contextKey("token")
 )
 
 // New creates a new firestore client
@@ -28,14 +39,6 @@ func New(ctx context.Context, projectID string, opts []option.ClientOption) (*fi
 	return app, nil
 }
 
-// func FirebaseApp() *firebase.App {
-// 	return app
-// }
-
-// func FirebaseAuth() *auth.Client {
-// 	return fireauth
-// }
-
 // func DefaultClient() *firestore.Client {
 // 	return client
 // }
@@ -51,6 +54,7 @@ func SaveGeneric(ctx context.Context, client *firestore.Client, collection, id s
 	return ref, ow, nil
 }
 
+// Authenticate can be used to check the Authorization header
 func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.ResponseWriter, r *http.Request, hardVerify bool) (*fauth.Token, error) {
 	idToken := r.Header.Get("Authorization")
 	if idToken == "" {
