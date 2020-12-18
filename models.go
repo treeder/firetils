@@ -6,6 +6,11 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
+type StoredAndStamped interface {
+	FirestoredI
+	TimestampedI
+}
+
 type FirestoredI interface {
 	GetRef() *firestore.DocumentRef
 	SetRef(*firestore.DocumentRef)
