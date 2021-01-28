@@ -8,6 +8,7 @@ import (
 
 type StoredAndStamped interface {
 	FirestoredI
+	IDedI
 	TimestampedI
 }
 
@@ -15,6 +16,11 @@ type FirestoredI interface {
 	GetRef() *firestore.DocumentRef
 	SetRef(*firestore.DocumentRef)
 }
+type IDedI interface {
+	GetID() string
+	SetID(string)
+}
+
 type Firestored struct {
 	Ref *firestore.DocumentRef `firestore:"-" json:"-"`
 }
@@ -57,4 +63,15 @@ func UpdateTimeStamps(obj TimestampedI) TimestampedI {
 	}
 	obj.SetUpdatedAt(time.Now())
 	return obj
+}
+
+type IDed struct {
+	ID string `firestore:"-" json:"id"`
+}
+
+func (f *IDed) GetID() string {
+	return f.ID
+}
+func (f *IDed) SetID(id string) {
+	f.ID = id
 }

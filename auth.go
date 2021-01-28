@@ -8,19 +8,27 @@ import (
 
 	fauth "firebase.google.com/go/v4/auth"
 	"github.com/treeder/gotils"
-	"go.uber.org/zap"
+)
+
+type contextKey string
+
+const (
+	TokenContextKey  = contextKey("token")
+	UserIdContextKey = contextKey("user_id")
+)
+
+var (
+	authClient *fauth.Client
 )
 
 // Authenticate checks the Authorization header for a firebase token
 func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.ResponseWriter, r *http.Request, hardVerify bool) (*fauth.Token, error) {
 	idToken := r.Header.Get("Authorization")
 	if idToken == "" {
-		gotils.WriteError(w, http.StatusForbidden, errors.New("Invalid token"))
 		return nil, errors.New("invalid Authorization token")
 	}
 	splitToken := strings.Split(idToken, " ")
 	if len(splitToken) < 2 {
-		gotils.WriteError(w, http.StatusForbidden, errors.New("Invalid token"))
 		return nil, errors.New("invalid Authorization token")
 	}
 	idToken = splitToken[1]
@@ -32,21 +40,30 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 		if err != nil {
 			if err.Error() == "ID token has been revoked" {
 				// Token is revoked. Inform the user to reauthenticate or signOut() the user.
-				gotils.L(ctx).Warn("ID token was revoked", zap.Error(err))
-				gotils.WriteError(w, http.StatusForbidden, errors.New("token has been revoked"))
 				return nil, errors.New("token has been revoked")
 			}
-			gotils.L(ctx).Warn("error verifying ID token with firebase", zap.Error(err))
-			gotils.WriteError(w, http.StatusForbidden, errors.New("cannot verify token"))
 			return nil, errors.New("cannot verify token")
 		}
 	} else {
 		token, err = firebaseAuth.VerifyIDToken(ctx, idToken)
 		if err != nil {
-			gotils.L(ctx).Warn("error verifying ID token", zap.Error(err))
-			gotils.WriteError(w, http.StatusForbidden, errors.New("cannot verify token"))
 			return nil, errors.New("cannot verify token")
 		}
 	}
 	return token, nil
+}
+
+func FireAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, err := Authenticate(r.Context(), authClient, w, r, false)
+		if err != nil {
+			gotils.WriteError(w, http.StatusForbidden, err)
+			return
+		}
+		// fmt.Printf("authed %v\n", token.UID)
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, TokenContextKey, token)
+		ctx = context.WithValue(ctx, UserIdContextKey, token.UID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

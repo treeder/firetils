@@ -13,6 +13,8 @@ type fireHolder struct {
 	auth *fauth.Client
 }
 
+// NewFireHolder don't use this yet
+// This is intended to be a way to have multiple firetils instance with different configs, rather than globals
 func NewFireHolder(ctx context.Context, app *firebase.App) *fireHolder {
 	return &fireHolder{App: app}
 }
