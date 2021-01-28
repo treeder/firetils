@@ -13,6 +13,10 @@ import (
 
 func Save(ctx context.Context, client *firestore.Client, collection string, v StoredAndStamped) (StoredAndStamped, error) {
 	UpdateTimeStamps(v)
+	owned, ok := v.(OwnedI)
+	if ok {
+		SetOwned(ctx, owned)
+	}
 	n := reflect.ValueOf(v)
 	preSave := n.MethodByName("PreSave")
 	if preSave.IsValid() {
@@ -122,6 +126,8 @@ func GetOneByQuery(ctx context.Context, q firestore.Query, t StoredAndStamped) e
 }
 
 // GetOneByQuery2 generic way to get a document
+// This one returns a new object.
+// Still trying to decide which way I like better...
 func GetOneByQuery2(ctx context.Context, q firestore.Query, v StoredAndStamped) (StoredAndStamped, error) {
 	t := reflect.TypeOf(v)
 	// fmt.Printf("DATA: %+v\n", doc.Data())

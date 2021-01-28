@@ -13,8 +13,8 @@ import (
 type contextKey string
 
 const (
-	TokenContextKey  = contextKey("token")
-	UserIdContextKey = contextKey("user_id")
+	tokenContextKey  = contextKey("token")
+	userIDContextKey = contextKey("user_id")
 )
 
 var (
@@ -62,8 +62,16 @@ func FireAuth(next http.Handler) http.Handler {
 		}
 		// fmt.Printf("authed %v\n", token.UID)
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, TokenContextKey, token)
-		ctx = context.WithValue(ctx, UserIdContextKey, token.UID)
+		ctx = context.WithValue(ctx, tokenContextKey, token)
+		ctx = context.WithValue(ctx, userIDContextKey, token.UID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+func UserID(ctx context.Context) string {
+	u := ctx.Value(userIDContextKey).(string)
+	return u
+}
+
+func SetOwned(ctx context.Context, o OwnedI) {
+	o.SetUserID(UserID(ctx))
 }

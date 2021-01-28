@@ -21,6 +21,11 @@ type IDedI interface {
 	SetID(string)
 }
 
+type OwnedI interface {
+	GetUserID() string
+	SetUserID(string)
+}
+
 type Firestored struct {
 	Ref *firestore.DocumentRef `firestore:"-" json:"-"`
 }
@@ -74,4 +79,15 @@ func (f *IDed) GetID() string {
 }
 func (f *IDed) SetID(id string) {
 	f.ID = id
+}
+
+type Owned struct {
+	UserID string `firestore:"user_id" json:"user_id"`
+}
+
+func (f *Owned) GetUserID() string {
+	return f.UserID
+}
+func (f *Owned) SetUserID(id string) {
+	f.UserID = id
 }
