@@ -202,7 +202,7 @@ func GetAllByQuery2(ctx context.Context, q firestore.Query, v StoredAndStamped) 
 		v2 := n.Interface()
 		err = doc.DataTo(v2)
 		if err != nil {
-			return nil, gotils.C(ctx).Errorf("error on datato: %v", err)
+			return nil, gotils.C(ctx).Errorf("error on DataTo: %v", err)
 		}
 		fstored := v2.(StoredAndStamped)
 		afterLoad(ctx, doc.Ref, fstored)
