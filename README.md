@@ -12,7 +12,7 @@ type X struct {
 }
 ```
 
-TODO
+You can do pre-saving and after-loading by adding `PreSave(ctx context.Context)` and/or `AfterLoad(ctx context.Context)` function to your models.
 
 ## Authentication
 
