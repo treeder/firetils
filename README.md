@@ -8,7 +8,7 @@ Add TimeStamped and Firestored to your objects, eg:
 ```go
 type X struct {
     firetils.Firestored
-    firetils.Timestamped
+    firetils.TimeStamped
 }
 ```
 
