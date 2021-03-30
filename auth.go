@@ -53,6 +53,7 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 	return token, nil
 }
 
+// FireAuth middleware to guard endpoints
 func FireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := Authenticate(r.Context(), authClient, w, r, false)
@@ -66,6 +67,26 @@ func FireAuth(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, userIDContextKey, token.UID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// OptionalAuth this won't guard it, but will set the token in the context if it's there. Will not error out if it's not there.
+func OptionalAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, err := Authenticate(r.Context(), authClient, w, r, false)
+		if err != nil {
+			// just ignore it
+			return
+		}
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, tokenContextKey, token)
+		ctx = context.WithValue(ctx, userIDContextKey, token.UID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func Token(ctx context.Context) *fauth.Token {
+	u := ctx.Value(tokenContextKey).(*fauth.Token)
+	return u
 }
 func UserID(ctx context.Context) string {
 	u := ctx.Value(userIDContextKey).(string)
