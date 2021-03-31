@@ -11,11 +11,26 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Save sets userID if it's in context, updates timestamps, calls PreSave(), then return object with Ref and ID set.
 func Save(ctx context.Context, client *firestore.Client, collection string, v StoredAndStamped) (StoredAndStamped, error) {
+	return Save2(ctx, client, collection, v, nil)
+}
+
+type SaveOptions struct {
+	SkipOwned bool // won't set userID on the saved object
+}
+
+// Save2 same as Save, but with options
+func Save2(ctx context.Context, client *firestore.Client, collection string, v StoredAndStamped, opts *SaveOptions) (StoredAndStamped, error) {
+	if opts == nil {
+		opts = &SaveOptions{}
+	}
 	UpdateTimeStamps(v)
-	owned, ok := v.(OwnedI)
-	if ok {
-		SetOwned(ctx, owned)
+	if !opts.SkipOwned {
+		owned, ok := v.(OwnedI)
+		if ok {
+			SetOwned(ctx, owned)
+		}
 	}
 	n := reflect.ValueOf(v)
 	preSave := n.MethodByName("PreSave")
@@ -32,7 +47,7 @@ func Save(ctx context.Context, client *firestore.Client, collection string, v St
 	} else if v.GetID() != "" {
 		// user set the ID
 		ref = client.Collection(collection).Doc(v.GetID())
-		_, err = ref.Set(ctx, v)
+		_, err = ref.Set(ctx, v) // TODO should this be changed to create so we don't accidently overwrite something?
 	} else {
 		// make new ID
 		ref, _, err = client.Collection(collection).Add(ctx, v)
