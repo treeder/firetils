@@ -29,7 +29,10 @@ func Save2(ctx context.Context, client *firestore.Client, collection string, v S
 	if !opts.SkipOwned {
 		owned, ok := v.(OwnedI)
 		if ok {
-			SetOwned(ctx, owned)
+			if owned.GetUserID() == "" {
+				// only set it if it's empty
+				SetOwned(ctx, owned)
+			}
 		}
 	}
 	n := reflect.ValueOf(v)
@@ -59,6 +62,20 @@ func Save2(ctx context.Context, client *firestore.Client, collection string, v S
 	v.SetID(ref.ID)
 	return v, nil
 }
+
+// Merge does a Set with MergeAll
+// Doesn't feel right...
+// func Merge(ctx context.Context, client *firestore.Client, collection, id string, v map[string]interface{}) {
+// 	// UpdateTimeStamps(v)
+// 	v["updatedAt"] = time.Now()
+// 	var err error
+// 	var ref *firestore.DocumentRef
+// 	ref = client.Collection(collection).Doc(id)
+// 	_, err = ref.Set(ctx, v, firestore.MergeAll)
+// 	if err != nil {
+// 		return nil, gotils.C(ctx).Errorf("Failed to store object: %v", err)
+// 	}
+// }
 
 // Collection returns CollectionRef by name
 func Collection(client *firestore.Client, name string) *firestore.CollectionRef {
