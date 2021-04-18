@@ -85,11 +85,11 @@ func OptionalAuth(next http.Handler) http.Handler {
 }
 
 func Token(ctx context.Context) *fauth.Token {
-	u := ctx.Value(tokenContextKey).(*fauth.Token)
+	u, _ := ctx.Value(tokenContextKey).(*fauth.Token)
 	return u
 }
 func UserID(ctx context.Context) string {
-	u := ctx.Value(userIDContextKey).(string)
+	u, _ := ctx.Value(userIDContextKey).(string)
 	return u
 }
 
