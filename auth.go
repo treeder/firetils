@@ -76,6 +76,7 @@ func OptionalAuth(next http.Handler) http.Handler {
 		if err != nil {
 			// just ignore it
 			next.ServeHTTP(w, r)
+			return
 		}
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, tokenContextKey, token)
