@@ -25,11 +25,11 @@ var (
 func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.ResponseWriter, r *http.Request, hardVerify bool) (*fauth.Token, error) {
 	idToken := r.Header.Get("Authorization")
 	if idToken == "" {
-		return nil, errors.New("invalid Authorization token")
+		return nil, errors.New("Invalid Authorization token")
 	}
 	splitToken := strings.Split(idToken, " ")
 	if len(splitToken) < 2 {
-		return nil, errors.New("invalid Authorization token")
+		return nil, errors.New("Invalid Authorization token")
 	}
 	idToken = splitToken[1]
 
