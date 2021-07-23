@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	fauth "firebase.google.com/go/v4/auth"
-	"github.com/treeder/gotils"
+	"github.com/treeder/gotils/v2"
 )
 
 type contextKey string

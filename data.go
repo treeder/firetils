@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"cloud.google.com/go/firestore"
-	"github.com/treeder/gotils"
+	"github.com/treeder/gotils/v2"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
