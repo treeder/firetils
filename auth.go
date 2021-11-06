@@ -23,40 +23,41 @@ var (
 
 // Authenticate checks the Authorization header for a firebase token
 func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.ResponseWriter, r *http.Request, hardVerify bool) (*fauth.Token, error) {
+	var err error
 	idToken := r.Header.Get("Authorization")
-	if idToken == "" {
-		cookie, err := r.Cookie("__session")
-		if err == nil && cookie != nil {
-			idToken = cookie.Value
-		}
-		if idToken == "" {
+	cookie, _ := r.Cookie("session")
+
+	if idToken != "" {
+		splitToken := strings.Split(idToken, " ")
+		if len(splitToken) < 2 {
 			return nil, errors.New("Invalid Authorization token")
 		}
-	}
-	splitToken := strings.Split(idToken, " ")
-	if len(splitToken) < 2 {
-		return nil, errors.New("Invalid Authorization token")
-	}
-	idToken = splitToken[1]
-
-	var err error
-	var token *fauth.Token
-	if hardVerify {
-		token, err = firebaseAuth.VerifyIDTokenAndCheckRevoked(ctx, idToken)
-		if err != nil {
-			if err.Error() == "ID token has been revoked" {
-				// Token is revoked. Inform the user to reauthenticate or signOut() the user.
-				return nil, errors.New("token has been revoked")
+		idToken = splitToken[1]
+		var token *fauth.Token
+		if hardVerify {
+			token, err = firebaseAuth.VerifyIDTokenAndCheckRevoked(ctx, idToken)
+			if err != nil {
+				if err.Error() == "ID token has been revoked" {
+					// Token is revoked. Inform the user to reauthenticate or signOut() the user.
+					return nil, errors.New("token has been revoked")
+				}
+				return nil, errors.New("cannot verify token")
 			}
-			return nil, errors.New("cannot verify token")
+		} else {
+			token, err = firebaseAuth.VerifyIDToken(ctx, idToken)
+			if err != nil {
+				return nil, errors.New("cannot verify token")
+			}
 		}
-	} else {
-		token, err = firebaseAuth.VerifyIDToken(ctx, idToken)
+		return token, nil
+	} else if cookie != nil {
+		token, err := firebaseAuth.VerifySessionCookieAndCheckRevoked(r.Context(), cookie.Value)
 		if err != nil {
 			return nil, errors.New("cannot verify token")
 		}
+		return token, nil
 	}
-	return token, nil
+	return nil, errors.New("Invalid Authorization token")
 }
 
 // FireAuth middleware to guard endpoints
