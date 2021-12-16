@@ -17,6 +17,12 @@ type StoredAndStamped interface {
 	TimestampedI
 }
 
+// todo: should FirestoredI just be merged with IdedI ?
+type StoredAndIded interface {
+	FirestoredI
+	IDedI
+}
+
 type FirestoredI interface {
 	GetRef() *firestore.DocumentRef
 	SetRef(*firestore.DocumentRef)

@@ -135,7 +135,7 @@ func GetByRef(ctx context.Context, client *firestore.Client, ref *firestore.Docu
 }
 
 // GetOneByQuery generic way to get a document
-func GetOneByQuery(ctx context.Context, q firestore.Query, t StoredAndStamped) error {
+func GetOneByQuery(ctx context.Context, q firestore.Query, t StoredAndIded) error {
 	iter := q.Documents(ctx)
 	doc, err := iter.Next()
 	if err == iterator.Done {
@@ -160,7 +160,7 @@ func GetOneByQuery(ctx context.Context, q firestore.Query, t StoredAndStamped) e
 // GetOneByQuery2 generic way to get a document
 // This one returns a new object.
 // Still trying to decide which way I like better...
-func GetOneByQuery2(ctx context.Context, q firestore.Query, v StoredAndStamped) (StoredAndStamped, error) {
+func GetOneByQuery2(ctx context.Context, q firestore.Query, v StoredAndIded) (StoredAndIded, error) {
 	t := reflect.TypeOf(v)
 	// fmt.Printf("DATA: %+v\n", doc.Data())
 	n := reflect.New(t.Elem())
@@ -242,7 +242,7 @@ func GetAllByQuery2(ctx context.Context, q firestore.Query, v StoredAndStamped) 
 	}
 	return ret, nil
 }
-func afterLoad(ctx context.Context, ref *firestore.DocumentRef, v StoredAndStamped) {
+func afterLoad(ctx context.Context, ref *firestore.DocumentRef, v StoredAndIded) {
 	v.SetRef(ref)
 	v.SetID(ref.ID)
 	// fmt.Printf("id: %v, status: %v\n", t.Ref.ID, t.Status)
