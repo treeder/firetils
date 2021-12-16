@@ -26,32 +26,46 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 	var err error
 	idToken := r.Header.Get("Authorization")
 	cookie, _ := r.Cookie("session")
+	sessionCookie := ""
+	var token *fauth.Token
 
 	if idToken != "" {
 		splitToken := strings.Split(idToken, " ")
 		if len(splitToken) < 2 {
 			return nil, errors.New("Invalid Authorization token")
 		}
+		authType := splitToken[0]
 		idToken = splitToken[1]
-		var token *fauth.Token
-		if hardVerify {
-			token, err = firebaseAuth.VerifyIDTokenAndCheckRevoked(ctx, idToken)
-			if err != nil {
-				if err.Error() == "ID token has been revoked" {
-					// Token is revoked. Inform the user to reauthenticate or signOut() the user.
-					return nil, errors.New("token has been revoked")
+		if authType == "Bearer" {
+			if hardVerify {
+				token, err = firebaseAuth.VerifyIDTokenAndCheckRevoked(ctx, idToken)
+				if err != nil {
+					if err.Error() == "ID token has been revoked" {
+						// Token is revoked. Inform the user to reauthenticate or signOut() the user.
+						return nil, errors.New("token has been revoked")
+					}
+					return nil, errors.New("cannot verify token")
 				}
-				return nil, errors.New("cannot verify token")
+			} else {
+				token, err = firebaseAuth.VerifyIDToken(ctx, idToken)
+				if err != nil {
+					return nil, errors.New("cannot verify token")
+				}
 			}
-		} else {
-			token, err = firebaseAuth.VerifyIDToken(ctx, idToken)
-			if err != nil {
-				return nil, errors.New("cannot verify token")
-			}
+			return token, nil
+		} else if authType == "Cookie" {
+			sessionCookie = idToken
 		}
-		return token, nil
-	} else if cookie != nil {
-		token, err := firebaseAuth.VerifySessionCookieAndCheckRevoked(r.Context(), cookie.Value)
+	}
+	if cookie != nil {
+		sessionCookie = cookie.Value
+	}
+	if sessionCookie != "" {
+		if hardVerify {
+			token, err = firebaseAuth.VerifySessionCookieAndCheckRevoked(ctx, sessionCookie)
+		} else {
+			token, err = firebaseAuth.VerifySessionCookie(ctx, sessionCookie)
+		}
 		if err != nil {
 			return nil, errors.New("cannot verify token")
 		}
