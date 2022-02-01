@@ -26,6 +26,9 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 	var err error
 	idToken := r.Header.Get("Authorization")
 	cookie, _ := r.Cookie("session")
+	if cookie == nil {
+		cookie, _ = r.Cookie("__session") // only cookie allowed with firebase hosting: https://stackoverflow.com/a/44935288/105562
+	}
 	sessionCookie := ""
 	var token *fauth.Token
 
