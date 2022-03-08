@@ -40,7 +40,7 @@ func (fh *fireHolder) FireAuth(next http.Handler) http.Handler {
 		}
 		// fmt.Printf("authed %v\n", token.UID)
 		// ctx = lWith(ctx, "user_id", token.UID)
-		ctx = context.WithValue(ctx, tokenContextKey, token)
+		ctx = context.WithValue(ctx, TokenContextKey, token)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 

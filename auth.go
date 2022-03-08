@@ -13,8 +13,8 @@ import (
 type contextKey string
 
 const (
-	tokenContextKey  = contextKey("token")
-	userIDContextKey = contextKey("user_id")
+	TokenContextKey  = contextKey("token")
+	UserIDContextKey = contextKey("user_id")
 )
 
 var (
@@ -87,8 +87,8 @@ func FireAuth(next http.Handler) http.Handler {
 		}
 		// fmt.Printf("authed %v\n", token.UID)
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, tokenContextKey, token)
-		ctx = context.WithValue(ctx, userIDContextKey, token.UID)
+		ctx = context.WithValue(ctx, TokenContextKey, token)
+		ctx = context.WithValue(ctx, UserIDContextKey, token.UID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -103,18 +103,18 @@ func OptionalAuth(next http.Handler) http.Handler {
 			return
 		}
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, tokenContextKey, token)
-		ctx = context.WithValue(ctx, userIDContextKey, token.UID)
+		ctx = context.WithValue(ctx, TokenContextKey, token)
+		ctx = context.WithValue(ctx, UserIDContextKey, token.UID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func Token(ctx context.Context) *fauth.Token {
-	u, _ := ctx.Value(tokenContextKey).(*fauth.Token)
+	u, _ := ctx.Value(TokenContextKey).(*fauth.Token)
 	return u
 }
 func UserID(ctx context.Context) string {
-	u, _ := ctx.Value(userIDContextKey).(string)
+	u, _ := ctx.Value(UserIDContextKey).(string)
 	return u
 }
 
