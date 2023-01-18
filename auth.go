@@ -96,13 +96,14 @@ func FireAuth(next http.Handler) http.Handler {
 // OptionalAuth this won't guard it, but will set the token in the context if it's there. Will not error out if it's not there.
 func OptionalAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := Authenticate(r.Context(), authClient, w, r, false)
+		ctx := r.Context()
+		token, err := Authenticate(ctx, authClient, w, r, false)
 		if err != nil {
+			gotils.L(ctx).Error().Printf("OptionalAuth error, ignoring: %v", err)
 			// just ignore it
 			next.ServeHTTP(w, r)
 			return
 		}
-		ctx := r.Context()
 		ctx = context.WithValue(ctx, TokenContextKey, token)
 		ctx = context.WithValue(ctx, UserIDContextKey, token.UID)
 		next.ServeHTTP(w, r.WithContext(ctx))
