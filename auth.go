@@ -18,7 +18,9 @@ const (
 )
 
 var (
-	authClient *fauth.Client
+	InvalidToken = errors.New("Invalid auth token")
+	NoToken      = errors.New("No auth token provided")
+	authClient   *fauth.Client
 )
 
 // Authenticate checks the Authorization header for a firebase token
@@ -29,13 +31,17 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 	if cookie == nil {
 		cookie, _ = r.Cookie("__session") // only cookie allowed with firebase hosting: https://stackoverflow.com/a/44935288/105562
 	}
+	// gotils.L(ctx).Info().Println("Authorization!!!", idToken, "cookie:", cookie, "--")
+	if cookie == nil && idToken == "" {
+		return nil, NoToken
+	}
 	sessionCookie := ""
 	var token *fauth.Token
 
 	if idToken != "" {
 		splitToken := strings.Split(idToken, " ")
 		if len(splitToken) < 2 {
-			return nil, errors.New("Invalid Authorization token")
+			return nil, InvalidToken
 		}
 		authType := splitToken[0]
 		idToken = splitToken[1]
@@ -74,7 +80,7 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 		}
 		return token, nil
 	}
-	return nil, errors.New("Invalid Authorization token")
+	return nil, InvalidToken
 }
 
 // FireAuth middleware to guard endpoints
@@ -99,8 +105,9 @@ func OptionalAuth(next http.Handler) http.Handler {
 		ctx := r.Context()
 		token, err := Authenticate(ctx, authClient, w, r, false)
 		if err != nil {
-			gotils.L(ctx).Error().Printf("OptionalAuth error, ignoring: %v", err)
-			// just ignore it
+			if !errors.Is(err, NoToken) {
+				gotils.L(ctx).Error().Printf("auth error, but optional so skipping: %v", err)
+			}
 			next.ServeHTTP(w, r)
 			return
 		}
