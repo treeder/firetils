@@ -9,9 +9,8 @@ require (
 	firebase.google.com/go/v4 v4.6.0
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/treeder/gotils/v2 v2.0.1
-	golang.org/x/net v0.0.0-20210716203947-853a461950ff // indirect
+	golang.org/x/net v0.7.0 // indirect
 	google.golang.org/api v0.51.0
-	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20210722135532-667f2b7c528f // indirect
 	google.golang.org/grpc v1.39.0
 )
