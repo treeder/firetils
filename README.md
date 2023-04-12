@@ -1,5 +1,25 @@
 # Firestore utils for golang
 
+Tools that make it easier to work with Google Cloud / Firebase's Firestore.
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/treeder/firetils.svg)](https://pkg.go.dev/github.com/treeder/firetils)
+
+For instance:
+
+```go
+ob := &MyObject{}
+err := firetils.Save(ctx, client, "myCollection", ob) // depending on interfaces on the object, it will update timestamps, call PreSave() function, etc
+```
+
+Fetching:
+
+There's several functions here, they will all call populate into a struct and call AfterLoad(). 
+
+```go
+firetils.GetByID
+firetils.GetOneByQuery
+firetils.GetAllByQuery
+```
 
 ## Data Handling
 
@@ -19,4 +39,3 @@ You can do pre-saving and after-loading by adding `PreSave(ctx context.Context)`
 `Authenticate` function will validate an auth token.
 
 Or use `FireAuth` middleware to do it automatically.
-
