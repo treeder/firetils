@@ -49,6 +49,7 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 			if hardVerify {
 				token, err = firebaseAuth.VerifyIDTokenAndCheckRevoked(ctx, idToken)
 				if err != nil {
+					gotils.L(ctx).Error().Println(err)
 					if err.Error() == "ID token has been revoked" {
 						// Token is revoked. Inform the user to reauthenticate or signOut() the user.
 						return nil, errors.New("token has been revoked")
@@ -56,6 +57,7 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 					return nil, errors.New("cannot verify token")
 				}
 			} else {
+				gotils.L(ctx).Error().Println(err)
 				token, err = firebaseAuth.VerifyIDToken(ctx, idToken)
 				if err != nil {
 					return nil, errors.New("cannot verify token")
@@ -76,6 +78,7 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 			token, err = firebaseAuth.VerifySessionCookie(ctx, sessionCookie)
 		}
 		if err != nil {
+			gotils.L(ctx).Error().Println(err)
 			return nil, errors.New("cannot verify token")
 		}
 		return token, nil
