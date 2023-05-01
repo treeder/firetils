@@ -29,6 +29,7 @@ Add TimeStamped and Firestored to your objects, eg:
 type X struct {
     firetils.Firestored
     firetils.TimeStamped
+    firetils.IDed
 }
 ```
 
@@ -38,4 +39,4 @@ You can do pre-saving and after-loading by adding `PreSave(ctx context.Context)`
 
 `Authenticate` function will validate an auth token.
 
-Or use `FireAuth` middleware to do it automatically.
+Or use `firetils.FireAuth` middleware to do it automatically.
