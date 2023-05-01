@@ -3,6 +3,7 @@ package firetils
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -49,18 +50,17 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 			if hardVerify {
 				token, err = firebaseAuth.VerifyIDTokenAndCheckRevoked(ctx, idToken)
 				if err != nil {
-					gotils.L(ctx).Error().Println(err)
+					// gotils.L(ctx).Error().Println(err)
 					if err.Error() == "ID token has been revoked" {
 						// Token is revoked. Inform the user to reauthenticate or signOut() the user.
 						return nil, errors.New("token has been revoked")
 					}
-					return nil, errors.New("cannot verify token")
+					return nil, fmt.Errorf("cannot verify token: %w")
 				}
 			} else {
-				gotils.L(ctx).Error().Println(err)
 				token, err = firebaseAuth.VerifyIDToken(ctx, idToken)
 				if err != nil {
-					return nil, errors.New("cannot verify token")
+					return nil, fmt.Errorf("cannot verify token: %w")
 				}
 			}
 			return token, nil
@@ -78,8 +78,8 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 			token, err = firebaseAuth.VerifySessionCookie(ctx, sessionCookie)
 		}
 		if err != nil {
-			gotils.L(ctx).Error().Println(err)
-			return nil, errors.New("cannot verify token")
+			// gotils.L(ctx).Error().Println(err)
+			return nil, fmt.Errorf("cannot verify token: %w")
 		}
 		return token, nil
 	}
