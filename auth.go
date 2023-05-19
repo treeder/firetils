@@ -55,12 +55,12 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 						// Token is revoked. Inform the user to reauthenticate or signOut() the user.
 						return nil, errors.New("token has been revoked")
 					}
-					return nil, fmt.Errorf("cannot verify token: %w")
+					return nil, fmt.Errorf("cannot verify token: %w", err)
 				}
 			} else {
 				token, err = firebaseAuth.VerifyIDToken(ctx, idToken)
 				if err != nil {
-					return nil, fmt.Errorf("cannot verify token: %w")
+					return nil, fmt.Errorf("cannot verify token: %w", err)
 				}
 			}
 			return token, nil
@@ -79,7 +79,7 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 		}
 		if err != nil {
 			// gotils.L(ctx).Error().Println(err)
-			return nil, fmt.Errorf("cannot verify token: %w")
+			return nil, fmt.Errorf("cannot verify token: %w", err)
 		}
 		return token, nil
 	}
