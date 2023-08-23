@@ -22,7 +22,11 @@ type StoredAndIded interface {
 	FirestoredI
 	IDedI
 }
-
+type FirestoredAndTimeStamped struct {
+	Firestored
+	TimeStamped
+	IDed
+}
 type FirestoredI interface {
 	GetRef() *firestore.DocumentRef
 	SetRef(*firestore.DocumentRef)
