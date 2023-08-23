@@ -12,6 +12,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - run: go test
     - name: Bump version
       run: |
         git config --global user.email "treeder+actions@gmail.com"
