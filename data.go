@@ -63,6 +63,52 @@ func Save2(ctx context.Context, client *firestore.Client, collection string, v S
 	return v, nil
 }
 
+func Save3(ctx context.Context, client *firestore.Client, collection string, v StoredAndStamped) error {
+	return Save3WithOpts(ctx, client, collection, v, nil)
+}
+
+func Save3WithOpts(ctx context.Context, client *firestore.Client, collection string, v StoredAndStamped, opts *SaveOptions) error {
+	if opts == nil {
+		opts = &SaveOptions{}
+	}
+	UpdateTimeStamps(v)
+	if !opts.SkipOwned {
+		owned, ok := v.(OwnedI)
+		if ok {
+			if owned.GetUserID() == "" {
+				// only set it if it's empty
+				SetOwned(ctx, owned)
+			}
+		}
+	}
+	n := reflect.ValueOf(v)
+	preSave := n.MethodByName("PreSave")
+	if preSave.IsValid() {
+		// fmt.Println("CALLING AfterLoad")
+		_ = preSave.Call([]reflect.Value{reflect.ValueOf(ctx)})
+		// TODO: check last value returned for an error!
+	}
+	var err error
+	var ref *firestore.DocumentRef
+	if v.GetRef() != nil {
+		ref = v.GetRef()
+		_, err = ref.Set(ctx, v)
+	} else if v.GetID() != "" {
+		// user set the ID
+		ref = client.Collection(collection).Doc(v.GetID())
+		_, err = ref.Set(ctx, v) // TODO should this be changed to create so we don't accidently overwrite something?
+	} else {
+		// make new ID
+		ref, _, err = client.Collection(collection).Add(ctx, v)
+	}
+	if err != nil {
+		return gotils.C(ctx).Errorf("Failed to store object: %v", err)
+	}
+	v.SetRef(ref)
+	v.SetID(ref.ID)
+	return nil
+}
+
 // Merge does a Set with MergeAll
 // Doesn't feel right...
 // func Merge(ctx context.Context, client *firestore.Client, collection, id string, v map[string]interface{}) {
@@ -173,9 +219,10 @@ func GetOneByQuery2(ctx context.Context, q firestore.Query, v StoredAndIded) (St
 }
 
 // GetAllByQuery generic way to get a list of documents.
-// NOTE: this doesn't seem to work well, best to use GetAllByQuery2
-// limit restricts how many are returned. <=0 is all
+// NOTE: this doesn't seem to work well, best to use GetAllByQuery2.
+// limit param restricts how many are returned. <=0 is all results.
 // ret will be filled with the objects
+// Deprecated: use GetAllByQuery2+
 func GetAllByQuery(ctx context.Context, q firestore.Query, limit int, ret []interface{}) error {
 	// tType := t.Elem()
 	// ret := []FirestoredI{}
@@ -209,14 +256,10 @@ func GetAllByQuery(ctx context.Context, q firestore.Query, limit int, ret []inte
 }
 
 // GetAllByQuery2 generic way to get a list of documents, by just passing in the type.
-// limit restricts how many we return. <=0 is all
+// `limit` param restricts how many we return. <=0 is all
 // v is an instance of the type of object to be returned, it will not be modified or updated.
 func GetAllByQuery2(ctx context.Context, q firestore.Query, v StoredAndStamped) ([]StoredAndStamped, error) {
-	// tType := t.Elem()
 	ret := []StoredAndStamped{}
-	// if limit > 0 {
-	// 	q = q.Limit(limit)
-	// }
 	iter := q.Documents(ctx)
 	defer iter.Stop()
 	for {
@@ -242,6 +285,35 @@ func GetAllByQuery2(ctx context.Context, q firestore.Query, v StoredAndStamped) 
 	}
 	return ret, nil
 }
+
+func GetAllByQuery3[T StoredAndStamped](ctx context.Context, q firestore.Query, v T) ([]T, error) {
+	ret := []T{}
+	iter := q.Documents(ctx)
+	defer iter.Stop()
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, gotils.C(ctx).Errorf("error iterating over query items: %v", err)
+		}
+		// HERE is how this all works: https://play.golang.org/p/tnsvwelTv4A
+		t := reflect.TypeOf(v)
+		// fmt.Printf("DATA: %+v\n", doc.Data())
+		n := reflect.New(t.Elem())
+		v2 := n.Interface()
+		err = doc.DataTo(v2)
+		if err != nil {
+			return nil, gotils.C(ctx).Errorf("error on DataTo: %v", err)
+		}
+		fstored := v2.(T)
+		afterLoad(ctx, doc.Ref, fstored)
+		ret = append(ret, fstored)
+	}
+	return ret, nil
+}
+
 func afterLoad(ctx context.Context, ref *firestore.DocumentRef, v StoredAndIded) {
 	v.SetRef(ref)
 	v.SetID(ref.ID)
