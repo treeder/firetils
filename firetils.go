@@ -17,7 +17,7 @@ func New(ctx context.Context, projectID string, opts []option.ClientOption) (*fi
 	if err != nil {
 		return nil, err
 	}
-	authClient, err = app.Auth(ctx)
+	AuthClient, err = app.Auth(ctx)
 	if err != nil {
 		return nil, err
 	}

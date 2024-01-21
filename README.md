@@ -1,4 +1,4 @@
-# Firestore utils for golang
+# Firebase utils for golang
 
 Tools that make it easier to work with Google Cloud / Firebase's Firestore.
 

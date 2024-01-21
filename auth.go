@@ -21,7 +21,7 @@ const (
 var (
 	InvalidToken = errors.New("Invalid auth token")
 	NoToken      = errors.New("No auth token provided")
-	authClient   *fauth.Client
+	AuthClient   *fauth.Client
 )
 
 // Authenticate checks the Authorization header for a firebase token
@@ -89,7 +89,7 @@ func Authenticate(ctx context.Context, firebaseAuth *fauth.Client, w http.Respon
 // FireAuth middleware to guard endpoints
 func FireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := Authenticate(r.Context(), authClient, w, r, false)
+		token, err := Authenticate(r.Context(), AuthClient, w, r, false)
 		if err != nil {
 			gotils.WriteError(w, http.StatusForbidden, err)
 			return
@@ -106,7 +106,7 @@ func FireAuth(next http.Handler) http.Handler {
 func OptionalAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		token, err := Authenticate(ctx, authClient, w, r, false)
+		token, err := Authenticate(ctx, AuthClient, w, r, false)
 		if err != nil {
 			if !errors.Is(err, NoToken) {
 				gotils.L(ctx).Error().Printf("auth error, but optional so skipping: %v", err)
