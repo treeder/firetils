@@ -46,11 +46,11 @@ func Save2(ctx context.Context, client *firestore.Client, collection string, v S
 	var ref *firestore.DocumentRef
 	if v.GetRef() != nil {
 		ref = v.GetRef()
-		_, err = ref.Set(ctx, v, firestore.MergeAll)
+		_, err = ref.Set(ctx, v)
 	} else if v.GetID() != "" {
 		// user set the ID
 		ref = client.Collection(collection).Doc(v.GetID())
-		_, err = ref.Set(ctx, v, firestore.MergeAll) // TODO should this be changed to create so we don't accidently overwrite something?
+		_, err = ref.Set(ctx, v) // TODO should this be changed to create so we don't accidently overwrite something?
 	} else {
 		// make new ID
 		ref, _, err = client.Collection(collection).Add(ctx, v)
